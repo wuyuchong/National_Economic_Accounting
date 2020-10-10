@@ -1,0 +1,213 @@
+---
+documentclass: ctexart
+output:
+  rticles::ctex:
+    fig_caption: yes
+    number_sections: yes
+    template: template.tex
+  word_document: default
+classoption: "hyperref,"
+geometry: margin=1in
+csl: chinese-gb7714-2005-numeric.csl
+bibliography: reference.bib
+header-includes:
+   - \usepackage{graphicx}
+   - \usepackage{float}
+   - \usepackage{indentfirst}
+   - \setlength{\parindent}{4em}
+logo: "cufe.jpg"
+---
+
+```{r setup, include=FALSE, message=FALSE}
+knitr::opts_chunk$set(fig.pos = 'H', echo = FALSE, warning = FALSE, message = FALSE)
+library(knitr)
+library(tidyverse)
+# base_family = 'STXihei'
+```
+
+# GDP 增速分析
+
+```{r}
+GDP = read.csv("GDP.csv")
+GDP_gather = GDP %>% 
+  filter(日期 > 1977) %>% 
+  gather("产业", "GDP", 2:ncol(GDP))
+GDP_gather_1 = GDP_gather %>% 
+  filter(产业 %in% c("GDP.现价.第一产业", "GDP.现价.第二产业", "GDP.现价.第三产业")) %>% 
+  mutate(计算方式 = "现价")
+GDP_gather_2 = GDP_gather %>% 
+  filter(产业 %in% c("GDP.不变价.第一产业", "GDP.不变价.第二产业", "GDP.不变价.第三产业")) %>% 
+  mutate(计算方式 = "不变价")
+GDP_gather = rbind(GDP_gather_1, GDP_gather_2)
+GDP_gather$产业[which(GDP_gather$产业 %in% c("GDP.现价.第一产业", "GDP.不变价.第一产业"))] = "第一产业"
+GDP_gather$产业[which(GDP_gather$产业 %in% c("GDP.现价.第二产业", "GDP.不变价.第二产业"))] = "第二产业"
+GDP_gather$产业[which(GDP_gather$产业 %in% c("GDP.现价.第三产业", "GDP.不变价.第三产业"))] = "第三产业"
+```
+
+```{r}
+GDP_gather %>%
+  ggplot() +
+  theme_minimal(base_family = "SimHei") +
+  geom_col(aes(x = 日期, y = GDP, fill = fct_reorder2(产业, 日期, GDP))) +
+  facet_grid(cols = vars(计算方式)) +
+  labs(fill = "产业", y = "GDP（单位：亿元）")
+```
+
+可以看出，自 1978 年以来，中国的 GDP 的现价稳步上升，在考虑了通货膨胀率之后，上涨的幅度依旧很大，且增长非常稳定。
+
+```{r}
+GDP_rate = read.csv("GDP_rate.csv")
+GDP_rate = GDP_rate %>% 
+  gather("分类", "增长率", 2:3) %>% 
+  mutate(增长率 = 增长率 / 100)
+GDP_rate %>%
+  ggplot() +
+  theme_minimal(base_family = "SimHei") +
+  geom_line(aes(x = 日期, y = 增长率, color = fct_reorder2(分类, 日期, 增长率))) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(color = "分类", y = "同比增长率")
+```
+
+```{r}
+GDP_rate = read.csv("GDP_industry_rate.csv")
+GDP_rate = GDP_rate %>% 
+  gather("分类", "增长率", 2:4) %>% 
+  mutate(增长率 = 增长率 / 100)
+GDP_rate %>%
+  ggplot() +
+  theme_minimal(base_family = "SimHei") +
+  geom_line(aes(x = 日期, y = 增长率, color = fct_reorder2(分类, 日期, 增长率))) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(color = "产业", y = "同比增长率")
+```
+
+
+```{r}
+GDP_gather %>%
+  ggplot() +
+  theme_minimal(base_family = "SimHei") +
+  geom_area(aes(x = 日期, y = GDP, fill = fct_reorder2(产业, 日期, GDP)), position = "fill") +
+  scale_y_continuous(labels = scales::percent) +
+  facet_grid(cols = vars(计算方式)) +
+  labs(fill = "产业", y = "GDP（单位：亿元）")
+```
+
+在 GDP 总量上升的同时，产业结构也在不断调整。可以看到，第二产业所占 GDP 的比例在近 50 年间并没有太多的变化，一直稳定在 40% - 50% 左右。然而，第三产业的占比则从 1978 年的 25% 左右一路上涨至 2019 年的超过 50% ，占比几乎翻倍；第一产业则恰恰相反。
+
+第三产业的迅速发展，得益于许多新兴产业如网络服务业的兴起，导致的经营方式和管理方式的革命性变革，这些改变提高了企业管理的水平，带来了高效率和高效益，为社会生产和生活消费创造了全新的服务方式。第三产业的发展，提高了社会服务质量，经济效益同时得到了显著提高。
+
+# 劳动生产率
+
+```{r fig.cap="国家全员劳动生产率"}
+labor = read.csv("labor.csv")
+labor %>%
+  ggplot(aes(x = 日期)) +
+  theme_minimal(base_family = "SimHei") +
+  geom_col(aes(y = 国家全员劳动生产率)) +
+  labs(y = "劳动生产率（单位：元/人）")
+```
+
+```{r fig.cap="国家全员劳动生产率同比增幅"}
+labor = read.csv("labor.csv")
+labor %>%
+  ggplot(aes(x = 日期)) +
+  theme_minimal(base_family = "SimHei") +
+  geom_line(aes(y = 同比)) +
+  labs(y = "劳动生产率（单位：百分比）")
+```
+
+## 上海
+
+```{r fig.cap="上海全员劳动生产率"}
+labor_shanghai = read.csv("labor_shanghai.csv")
+labor_shanghai = labor_shanghai %>% 
+  gather("产业", "劳动生产率", 2:4)
+labor_shanghai$产业[which(labor_shanghai$产业 == "上海.全员劳动生产率.第一产业")] = "第一产业"
+labor_shanghai$产业[which(labor_shanghai$产业 == "上海.全员劳动生产率.第二产业")] = "第二产业"
+labor_shanghai$产业[which(labor_shanghai$产业 == "上海.全员劳动生产率.第三产业")] = "第三产业"
+labor_shanghai %>%
+  ggplot(aes(x = 日期)) +
+  theme_minimal(base_family = "SimHei") +
+  geom_line(aes(y = 劳动生产率, color = fct_reorder2(产业, 日期, 劳动生产率))) +
+  labs(y = "全员劳动生产率（单位：元/人）", color = "产业", caption = "中国上海地区")
+```
+
+
+# 贡献率和拉动率
+
+```{r}
+industry = read.csv("industry.csv")
+industry_gather = industry %>% 
+  gather("产业", "value", 2:ncol(industry))
+industry_gather_1 = industry_gather %>% 
+  filter(产业 %in% c("GDP增长贡献率.第一产业", "GDP增长贡献率.第二产业", "GDP增长贡献率.第三产业")) %>% 
+  mutate(指标 = "贡献率")
+industry_gather_2 = industry_gather %>% 
+  filter(产业 %in% c("对GDP增长的拉动.第一产业", "对GDP增长的拉动.第二产业", "对GDP增长的拉动.第三产业")) %>% 
+  mutate(指标 = "拉动率")
+industry_gather = rbind(industry_gather_1, industry_gather_2)
+industry_gather$产业[which(industry_gather$产业 %in% c("对GDP增长的拉动.第一产业", "GDP增长贡献率.第一产业"))] = "第一产业"
+industry_gather$产业[which(industry_gather$产业 %in% c("对GDP增长的拉动.第二产业", "GDP增长贡献率.第二产业"))] = "第二产业"
+industry_gather$产业[which(industry_gather$产业 %in% c("对GDP增长的拉动.第三产业", "GDP增长贡献率.第三产业"))] = "第三产业"
+industry_gather$value = industry_gather$value / 100
+```
+
+```{r}
+industry_gather %>%
+  ggplot() +
+  theme_minimal(base_family = "SimHei") +
+  geom_line(aes(x = 日期, y = value, color = fct_reorder2(产业, 日期, value))) +
+  facet_grid(rows = vars(指标)) +
+  labs(color = "产业", y = "值") +
+  scale_y_continuous(labels = scales::percent)
+```
+
+2019年第一、第二、第三产业对 GDP 的拉动率分别为：0.23、2.24、3.62 个百分点。从历史趋势我们可以看到，第一产业的贡献率一直非常低，第三产业的贡献率在 2007 年左右稳定超过了第二产业。
+
+
+# 最终消费率和投资率
+
+```{r}
+expense = read.csv("expense.csv")
+expense = expense[, -4]
+expense_gather = expense %>% 
+  gather("指标", "value", 2:ncol(expense))
+expense_gather$value = expense_gather$value / 100
+```
+
+```{r}
+expense_gather %>%
+  ggplot() +
+  theme_minimal(base_family = "SimHei") +
+  geom_line(aes(x = 日期, y = value, color = fct_reorder2(指标, 日期, value))) +
+  labs(color = "指标", y = "指标数值") +
+  scale_y_continuous(labels = scales::percent)
+```
+
+毫无疑问，自78年以来，我国消费能力和水平稳步提升，然而从整个国民经济结构来看，消费增速低于投资和GDP增速，表现为消费率除了在少数几年间有短暂的上升外，总体呈下降态势。在 2000 年后消费率更是一度暴跌，从 62.3% 降到 2010 年的49.1%；与此形成鲜明对照的是投资率从2000年的 34.3% 飙升到 2010 年的 47.3%。
+其次，从居民内部收入分配来看，收入分配政策总体上不利于低收入群体，不利于促进消费。
+
+不过，需要提及的是，消费率的波动下降并非仅仅是中国的独有特征，而与国家的发展阶段有关。大多数国家的消费率都经历了长期下降的过程，而且也都会再进入逐步提升的阶段。可以看到，自 2010 年是我国的消费率拐点期，从这一年开始，我国的消费率开始稳步上升。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
