@@ -20,12 +20,22 @@ logo: "cufe.jpg"
 
 ```{r setup, include=FALSE, message=FALSE}
 knitr::opts_chunk$set(fig.pos = 'H', echo = FALSE, warning = FALSE, message = FALSE)
-library(knitr)
 library(tidyverse)
+library(knitr)
 # base_family = 'STXihei'
 ```
 
-# GDP 增速分析
+# 背景
+
+中国自 1978 年改革开放以来取得了非凡的成就，从新结构经济学的视角来看，中国改革开放以后经济的持续快速发展是发挥了后来者优势的潜力。尽管后来者优势
+^[后来者优势即发展中国家能够将其他发达国家用过的成熟技术和产业转移到当地，实现技术创新、产业升级]
+在工业革命以后就一直都存在，然而在 1978 年前我国的发展战略出了问题，在超英赶美的口号下，脱离了资本短缺的实际，造成了资源错配等问题。1978年我国的人均GDP只有155美元，还不到撒哈拉沙漠以南的非洲国家平均数的三分之一，84% 的人生活在国际上一天 1.25 美元的贫困线之下。1978 年底开始改革开放以后，国家从计划经济向市场经济国家转型，中国的经济也开始腾飞。
+
+# 数据来源
+
+该作业的数据来源于国家统计局[中国统计年鉴](http://www.stats.gov.cn/tjsj/ndsj/2019/indexch.htm)和各大统计数据网站。
+
+# GDP 总量、增速和产业结构分析
 
 ```{r}
 GDP = read.csv("GDP.csv")
@@ -44,10 +54,10 @@ GDP_gather$产业[which(GDP_gather$产业 %in% c("GDP.现价.第二产业", "GDP
 GDP_gather$产业[which(GDP_gather$产业 %in% c("GDP.现价.第三产业", "GDP.不变价.第三产业"))] = "第三产业"
 ```
 
-```{r}
+```{r fig.cap="GDP总量变化趋势", out.width="80%", fig.align="center"}
 GDP_gather %>%
   ggplot() +
-  theme_minimal(base_family = "SimHei") +
+  theme_minimal(base_family = "STHeiti") +
   geom_col(aes(x = 日期, y = GDP, fill = fct_reorder2(产业, 日期, GDP))) +
   facet_grid(cols = vars(计算方式)) +
   labs(fill = "产业", y = "GDP（单位：亿元）")
@@ -55,37 +65,40 @@ GDP_gather %>%
 
 可以看出，自 1978 年以来，中国的 GDP 的现价稳步上升，在考虑了通货膨胀率之后，上涨的幅度依旧很大，且增长非常稳定。
 
-```{r}
+```{r fig.cap="不变价与人均GDP同比增长", out.width="80%", fig.align="center"}
 GDP_rate = read.csv("GDP_rate.csv")
 GDP_rate = GDP_rate %>% 
   gather("分类", "增长率", 2:3) %>% 
   mutate(增长率 = 增长率 / 100)
 GDP_rate %>%
   ggplot() +
-  theme_minimal(base_family = "SimHei") +
+  theme_minimal(base_family = "STKaiti") +
   geom_line(aes(x = 日期, y = 增长率, color = fct_reorder2(分类, 日期, 增长率))) +
   scale_y_continuous(labels = scales::percent) +
   labs(color = "分类", y = "同比增长率")
 ```
 
-```{r}
+对于不变价 GDP 的增速，在 1953 年到 1978 年间，GDP 的增长率虽然多数年份为正，但十分不稳定，某几年甚至出现增速为负的情况。这种情况在 78 年之后得到了好转，一直至今我国的 GDP 一直保持较为平稳地增长。值得注意的是，在 1999 年 - 2007，GDP 的增长率年年攀升，最高达到了 14.2%，然而在 08 年金融危机的影响下，增速开始连年放缓，19 年不变价GDP增长率只有 6.1%。人均 GDP 增长率趋势大致与不变价 GDP 相同。
+
+```{r fig.cap="三大产业GDP同比增长率", out.width="80%", fig.align="center"}
 GDP_rate = read.csv("GDP_industry_rate.csv")
 GDP_rate = GDP_rate %>% 
   gather("分类", "增长率", 2:4) %>% 
   mutate(增长率 = 增长率 / 100)
 GDP_rate %>%
   ggplot() +
-  theme_minimal(base_family = "SimHei") +
+  theme_minimal(base_family = "STKaiti") +
   geom_line(aes(x = 日期, y = 增长率, color = fct_reorder2(分类, 日期, 增长率))) +
   scale_y_continuous(labels = scales::percent) +
   labs(color = "产业", y = "同比增长率")
 ```
 
+GDP 增长率细分到三大产业则显示出了各自较为独特的特征。第二产业的增长率是三大产业中最不稳定的，第一产业和第三产业相对来说较为平稳。近 30 年，第一产业的增长率一直落后于第二三产业；近 5 年，第三产业增速一直高于第二产业。
 
-```{r}
+```{r fig.cap="三大产业占GDP的比例", out.width="80%", fig.align="center"}
 GDP_gather %>%
   ggplot() +
-  theme_minimal(base_family = "SimHei") +
+  theme_minimal(base_family = "STKaiti") +
   geom_area(aes(x = 日期, y = GDP, fill = fct_reorder2(产业, 日期, GDP)), position = "fill") +
   scale_y_continuous(labels = scales::percent) +
   facet_grid(cols = vars(计算方式)) +
@@ -96,29 +109,31 @@ GDP_gather %>%
 
 第三产业的迅速发展，得益于许多新兴产业如网络服务业的兴起，导致的经营方式和管理方式的革命性变革，这些改变提高了企业管理的水平，带来了高效率和高效益，为社会生产和生活消费创造了全新的服务方式。第三产业的发展，提高了社会服务质量，经济效益同时得到了显著提高。
 
-# 劳动生产率
+# 劳动生产率分析
 
-```{r fig.cap="国家全员劳动生产率"}
+```{r fig.cap="国家全员劳动生产率", out.width="80%", fig.align="center"}
 labor = read.csv("labor.csv")
 labor %>%
   ggplot(aes(x = 日期)) +
-  theme_minimal(base_family = "SimHei") +
+  theme_minimal(base_family = "STKaiti") +
   geom_col(aes(y = 国家全员劳动生产率)) +
   labs(y = "劳动生产率（单位：元/人）")
 ```
 
-```{r fig.cap="国家全员劳动生产率同比增幅"}
-labor = read.csv("labor.csv")
+```{r fig.cap="国家全员劳动生产率同比增幅", out.width="80%", fig.align="center"}
+labor$同比 = labor$同比 / 100
 labor %>%
   ggplot(aes(x = 日期)) +
-  theme_minimal(base_family = "SimHei") +
+  theme_minimal(base_family = "STKaiti") +
+  scale_y_continuous(labels = scales::percent) +
   geom_line(aes(y = 同比)) +
-  labs(y = "劳动生产率（单位：百分比）")
+  labs(y = "劳动生产率")
 ```
 
-## 上海
+我国的全员劳动率一直保持稳定上升的趋势。从 1979 年的不到 1 万元/人一直上涨至 2019 年的 11 万元/人，除了 1981 年和 1990 年外，增幅一直为保持正值。经济发展代表收入水平不断提高，收入水平不断提高靠的是劳动生产率水平不断提高。劳动生产率水平不断提高的原因有二：一是现有的产业技术创新，二是附加价值更高的新产业不断地涌现。
 
-```{r fig.cap="上海全员劳动生产率"}
+
+```{r fig.cap="上海全员劳动生产率", out.width="80%", fig.align="center"}
 labor_shanghai = read.csv("labor_shanghai.csv")
 labor_shanghai = labor_shanghai %>% 
   gather("产业", "劳动生产率", 2:4)
@@ -127,13 +142,14 @@ labor_shanghai$产业[which(labor_shanghai$产业 == "上海.全员劳动生产�
 labor_shanghai$产业[which(labor_shanghai$产业 == "上海.全员劳动生产率.第三产业")] = "第三产业"
 labor_shanghai %>%
   ggplot(aes(x = 日期)) +
-  theme_minimal(base_family = "SimHei") +
+  theme_minimal(base_family = "STKaiti") +
   geom_line(aes(y = 劳动生产率, color = fct_reorder2(产业, 日期, 劳动生产率))) +
   labs(y = "全员劳动生产率（单位：元/人）", color = "产业", caption = "中国上海地区")
 ```
 
+如果将全国范围缩小至上海地区，那么可以看到，农业的劳动生产率已经远远落后于工业和服务业，工业和服务业则增长势头较为一致。然而在 2012 年之后，工业的增长开始放缓，农业甚至出现了负增长，而服务业则保持这非常高的增速，甚至还有所加快。这也体现出了上海作为中国的一个核心城市，其服务业的发达程度越来越高。
 
-# 贡献率和拉动率
+# 贡献率和拉动率分析
 
 ```{r}
 industry = read.csv("industry.csv")
@@ -152,10 +168,10 @@ industry_gather$产业[which(industry_gather$产业 %in% c("对GDP增长的拉�
 industry_gather$value = industry_gather$value / 100
 ```
 
-```{r}
+```{r fig.cap="三大产业的拉动率和贡献率", out.width="80%", fig.align="center"}
 industry_gather %>%
   ggplot() +
-  theme_minimal(base_family = "SimHei") +
+  theme_minimal(base_family = "STKaiti") +
   geom_line(aes(x = 日期, y = value, color = fct_reorder2(产业, 日期, value))) +
   facet_grid(rows = vars(指标)) +
   labs(color = "产业", y = "值") +
@@ -164,8 +180,7 @@ industry_gather %>%
 
 2019年第一、第二、第三产业对 GDP 的拉动率分别为：0.23、2.24、3.62 个百分点。从历史趋势我们可以看到，第一产业的贡献率一直非常低，第三产业的贡献率在 2007 年左右稳定超过了第二产业。
 
-
-# 最终消费率和投资率
+# 最终消费率和投资率分析
 
 ```{r}
 expense = read.csv("expense.csv")
@@ -175,10 +190,10 @@ expense_gather = expense %>%
 expense_gather$value = expense_gather$value / 100
 ```
 
-```{r}
+```{r fig.cap="最终消费率和投资率", out.width="80%", fig.align="center"}
 expense_gather %>%
   ggplot() +
-  theme_minimal(base_family = "SimHei") +
+  theme_minimal(base_family = "STKaiti") +
   geom_line(aes(x = 日期, y = value, color = fct_reorder2(指标, 日期, value))) +
   labs(color = "指标", y = "指标数值") +
   scale_y_continuous(labels = scales::percent)
@@ -189,25 +204,42 @@ expense_gather %>%
 
 不过，需要提及的是，消费率的波动下降并非仅仅是中国的独有特征，而与国家的发展阶段有关。大多数国家的消费率都经历了长期下降的过程，而且也都会再进入逐步提升的阶段。可以看到，自 2010 年是我国的消费率拐点期，从这一年开始，我国的消费率开始稳步上升。
 
+# 总结
+
+从 1978 年到 2019 年，38年间我国平均每年国内生产总值的增长率达到 9% 左右。这对于世界上任何一个国家都是难以想象的。经过这些年的高速增长，国内生产总值增加了超过33倍。经济总量占世界经济的比重
+^[按市场汇率计算]
+从 1978 年的 2.3%，到如今已经超过了 16%。按市场汇率计算我们国家已经是世界第二大经济体，如果按照购买力平价计算，则已经是世界第一大经济体，同时也是世界第一大贸易国。
+
+# 储备
 
 
 
 
 
+　　在80年代90年代开始转型的时候，当时普遍的看法是计划经济不如市场经济，所以要向市场经济转型。要转型就必须以休克疗法推行私有化、市场化、自由化，把政府的一切干预、保护、补贴取消掉，才能让市场发挥配置资源的功能。他们认为这样才能够建立起完善的市场制度。但是这样做忘记了在过去的发展思路下，建立了一大批规模很大、资本很密集的企业，把保护补贴都取消掉，这些企业就都垮台了，造成大量的失业，社会不稳定，政治不稳定。
 
+　　而且，有很多大的资本密集企业是跟国防安全有关的，私有化了以后，为了国防安全，不能让它垮台。从理论来看，这些企业在私有化以后，会有更大的积极性寻租。在80年代、90年代，我跟国内国外很多经济学家争论，当时只是理论的争论，但是现在有大量的经验证明，那些资本非常密集的产业在私有化以后，如果不允许垮台，实际上它从国家拿到的保护补贴比原来更多。在这种情况下，效率当然变差，经济也就崩溃、停滞、危机不断。
 
+　　为什么我们能够维持稳定和高速增长？最主要的原因是当时我们并不是照搬外国的理论。小平同志讲 “解放思想、实事求是”，“摸着石头过河”——既然这些大的国有企业不给补贴活不了，那就给转型期必要的保护补贴；同时放开我们具有比较优势的劳动密集型加工业的准入，不仅放开了准入，而且，还积极因势利导让它快速发展。
 
+　　开始时，全国的基础设施很差。要把比较优势变成竞争优势，必须有好的基础设施，既然没有能力同时把全国的基础设施建好，就先搞特区、加工出口区、工业园区。当时为了帮大型的国有企业，政府对市场有很多干预，营商环境非常差，政府又没办法一下子把所有的干预取消掉。因此就在特区、加工出口区、工业园实行一站式的服务。靠这种务实的方式，就很快把劳动密集产业的比较优势变成了竞争优势，带来了连续38年平均每年9.6%的增长。
 
+　　快速发展积累了资本，我国逐渐从一个资本短缺的经济体成为一个资本丰富的国家，比较优势发生了变化，许多原来不具比较优势的产业变成了我国的比较优势。在不具备比较优势的时候，给补贴是雪中送炭，现在符合比较优势了，企业有自生能力了，再给补贴，那就变成锦上添花了，锦上添花当然不需要，所以就有了十八届三中全会全面深化改革的决定，把转型期遗留下来的那些保护补贴和干预扭曲取消掉，建立一个完善的市场经济体制，让市场在资源配置中其决定性作用。我想这是改革开放以后我国能够实现稳定和快速发展，而其他转型中国家经济崩溃、停滞、危机不断的原因。
 
+　　改革开放40年的经验教训
+　　从这样的一个反思里，可以学习一些对我们未来发展有益的经验教训。
 
+　　第一，经济要发展成功，就必须发挥比较优势，才能够形成竞争优势。我们是中等收入国家，按市场汇率计算，我国人均GDP是8100多美元，美国是57000美元，只有美国的七分之一，按照购买力平价计算，我们只有美国的四分之一。代表我国的劳动生产率水平跟美国这样的发达国家比还有很大差距，我国还有很多后来者的优势可以挖掘。我们经济保持6.5%以上的中高速增长，在全世界还是高速增长。我相信这个状况在短期内不会变化。但它的前提就是我们必须按照比较优势发展经济，才能形成竞争优势，这是第一点。
 
+　　第二，我们必须解放思想，实事求是。作为一个发展中国家、转型中国家，一定会有很多扭曲、干预、落后的地方。那些干预、扭曲、落后都是有原因的。不能照搬教科书来解决，必须解放思想，实事求是，在实践上不断创新。这也是十九大所讲的，实践永无止境，创新永无止境，不能简单照搬发达国家的经验和来自于发达国家的教科书的理论。
 
+　　如果能这样，我相信我们国家的经济发展在提高质量的同时，可以保持相对较快的速度，到2035年，初步建设成社会主义现代化国家；到2050年，建设成一个富强、民主、文明、和谐、美丽的社会主义强国，实现中华民族伟大复兴的目标。
 
+　　我国经济转型发展取得的经验教训，对其他发展中国家同样也有参考、借鉴的价值。因为经验和理论的适用性，取决于条件的相似性。
 
+　　过去发展中国家在追求国家现代化的过程当中，通常有一种西天取经的心态，认为发达国家之所以成功，把他的经验、理论学会，拿回来实践就能帮助国家工业化、现代化，实现民富国强的目标，这样做出发点非常好，结果却令人失望。
 
-
-
-
+　　中国这样的发展中国家的条件和其他发展中国家是比较接近的，根据中国的经验提出的理论，在其他发展中国家也会有比较好的参考借鉴价值。中华民族有伟大复兴的梦想，每个发展中国家也都有成为现代化、工业化的高收入国家的梦想。中国的经验、理论对他们会比发达国家的经验和理论有更好的参考借鉴价值。随着中国的崛起，我们或许能迎来“百花齐放春满园”的新时代、新世界的到来！
 
 
 
