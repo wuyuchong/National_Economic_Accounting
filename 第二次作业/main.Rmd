@@ -1,0 +1,51 @@
+---
+documentclass: ctexart
+output:
+  rticles::ctex:
+    fig_caption: yes
+    number_sections: yes
+    template: template.tex
+  word_document: default
+classoption: "hyperref,"
+geometry: margin=1in
+csl: chinese-gb7714-2005-numeric.csl
+bibliography: reference.bib
+header-includes:
+   - \usepackage{graphicx}
+   - \usepackage{float}
+   - \usepackage{indentfirst}
+   - \setlength{\parindent}{4em}
+logo: "cufe.jpg"
+---
+
+```{r setup, include=FALSE, message=FALSE}
+knitr::opts_chunk$set(fig.pos = 'H', echo = FALSE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(knitr)
+# base_family = 'STXihei'
+```
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+
+```{r}
+library(rstatscn)
+```
+
+```{r}
+statscnDbs()
+statscnQueryZb(dbcode='hgnd')
+```
+
+
+
+
+
+
+
+
+
